@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Manager Pro - Complete</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f3f4f6;
+            overflow: hidden;
+        }
+        
+        .screen { 
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .screen.active { display: block; }
+        
+        #login { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+        }
+        
+        .logo-icon { text-align: center; font-size: 72px; margin-bottom: 20px; }
+        h1 { text-align: center; color: #2563eb; font-size: 32px; margin-bottom: 8px; font-weight: 800; }
+        .subtitle { text-align: center; color: #6b7280; margin-bottom: 35px; font-size: 15px; }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-item {
+            text-align: center;
+            padding: 15px 10px;
+            background: #f9fafb;
+            border-radius: 12px;
+        }
+        
+        .feature-item .icon { font-size: 28px; margin-bottom: 5px; }
+        .feature-item .label { font-size: 11px; color: #6b7280; font-weight: 600; }
+        
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 20px; z-index: 1; }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 16px 16px 16px 50px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        select, textarea { padding-left: 16px; }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4); }
+        .btn-small { padding: 10px 16px; font-size: 14px; margin-bottom: 8px; }
+        .btn-success { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .btn-danger { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+        
+        .link { text-align: center; margin-top: 15px; }
+        .link a { color: #667eea; text-decoration: none; font-weight: 600; padding: 8px 16px; border-radius: 8px; display: inline-block; }
+        .link a:hover { background: #f3f4f6; }
+        
+        .divider { display: flex; align-items: center; margin: 25px 0; color: #9ca3af; font-size: 14px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #e5e7eb; }
+        .divider span { padding: 0 15px; font-weight: 500; }
+        
+        .popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 2999; display: none; }
+        .popup-overlay.show { display: block; }
+        
+        .welcome-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            z-index: 3000;
+            max-width: 500px;
+            width: 90%;
+            display: none;
+            text-align: center;
+        }
+        
+        .welcome-popup.show { display: block; }
+        .welcome-popup h2 { color: #2563eb; font-size: 28px; margin-bottom: 16px; }
+        .welcome-popup p { color: #6b7280; line-height: 1.6; margin-bottom: 24px; }
+        
+        #app { min-height: 100vh; padding-bottom: 80px; background: #f3f4f6; }
+        .header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logout { background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        
+        .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        
+        .nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            padding: 10px;
+            z-index: 100;
+        }
+        
+        .nav-btn { background: none; border: none; padding: 10px; cursor: pointer; border-radius: 10px; color: #6b7280; font-size: 11px; }
+        .nav-btn.active { background: #dbeafe; color: #2563eb; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; padding: 20px; z-index: 200; }
+        .modal.active { display: flex; }
+        .modal-box { background: white; padding: 30px; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        
+        .stat-box { text-align: center; padding: 16px; background: #f9fafb; border-radius: 12px; border: 1px solid #e5e7eb; }
+        .stat-value { font-size: 24px; font-weight: 700; color: #2563eb; margin-bottom: 4px; }
+        .stat-label { font-size: 13px; color: #6b7280; }
+        
+        .action-buttons { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        
+        .instruction-section { margin-bottom: 24px; }
+        .instruction-section h3 { color: #2563eb; margin-bottom: 12px; font-size: 18px; }
+        .instruction-section ul { margin-left: 20px; }
+        .instruction-section li { margin-bottom: 8px; line-height: 1.6; color: #374151; }
+    </style>
+</head>
+<body>
+    <div id="login" class="screen active">
+        <div class="login-box">
+            <div class="logo-icon">🚛</div>
+            
+            <div id="loginDiv">
+                <h1>Fleet Manager</h1>
+                <p class="subtitle">Professional Transport Management</p>
+                
+                <div class="features">
+                    <div class="feature-item"><div class="icon">🚛</div><div class="label">Vehicles</div></div>
+                    <div class="feature-item"><div class="icon">🗺️</div><div class="label">Trips</div></div>
+                    <div class="feature-item"><div class="icon">💰</div><div class="label">Expenses</div></div>
+                </div>
+                
+                <div class="input-group">
+                    <span class="input-icon">📧</span>
+                    <input type="email" id="lemail" placeholder="Email Address">
+                </div>
+                
+                <div class="input-group">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="lpass" placeholder="Password">
+                </div>
+                
+                <button class="btn" onclick="doLogin()">Login to Dashboard</button>
+                
+                <div class="link"><a href="#" onclick="showForgotPassword(); return false;">Forgot Password?</a></div>
+                <div class="divider"><span>OR</span></div>
+                <div class="link"><a href="#" onclick="showSignup(); return false;" style="background: #f3f4f6; padding: 12px 24px;">✨ Create New Account</a></div>
+            </div>
+
+            <div id="forgotDiv" style="display:none;">
+                <h1>Forgot Password</h1>
+                <p class="subtitle">We'll help you recover your password</p>
+                <div class="input-group">
+                    <span class="input-icon">📧</span>
+                    <input type="email" id="femail" placeholder="Enter your email">
+                </div>
+                <button class="btn" onclick="recoverPassword()">Recover Password</button>
+                <div class="link"><a href="#" onclick="showLogin(); return false;">← Back to Login</a></div>
+            </div>
+
+            <div id="signupDiv" style="display:none;">
+                <h1>Create Account</h1>
+                <p class="subtitle">Start managing your fleet today</p>
+                <div class="input-group">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="sname" placeholder="Business Name">
+                </div>
+                <div class="input-group">
+                    <span class="input-icon">📧</span>
+                    <input type="email" id="semail" placeholder="Email Address">
+                </div>
+                <div class="input-group">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="spass" placeholder="Password (min 6 characters)">
+                </div>
+                <button class="btn" onclick="doSignup()">Create Account</button>
+                <div class="link"><a href="#" onclick="showLogin(); return false;">← Already have account? Login</a></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="popupOverlay"></div>
+    <div class="welcome-popup" id="welcomePopup">
+        <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+        <h2 id="welcomeTitle">Welcome Back!</h2>
+        <p id="welcomeMessage">Successfully logged in!</p>
+        <button class="btn" onclick="closeWelcomePopup()">Get Started</button>
+    </div>
+
+    <div id="app" class="screen">
+        <div class="header">
+            <div><span style="font-size:24px;">🚛</span> <strong id="userName">Fleet Manager</strong></div>
+            <button class="logout" onclick="doLogout()">Logout</button>
+        </div>
+
+        <div class="content">
+            <div id="page1" class="page active">
+                <h2 style="margin-bottom: 20px;">📊 Dashboard</h2>
+                <div class="card" style="cursor:default;">
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+                        <div style="text-align:center;padding:16px;background:#dbeafe;border-radius:12px;">
+                            <div style="font-size:32px;font-weight:700;color:#2563eb;" id="statVehicles">0</div>
+                            <div style="color:#6b7280;font-size:14px;">Vehicles</div>
+                        </div>
+                        <div style="text-align:center;padding:16px;background:#dcfce7;border-radius:12px;">
+                            <div style="font-size:32px;font-weight:700;color:#16a34a;" id="statTrips">0</div>
+                            <div style="color:#6b7280;font-size:14px;">Trips</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="cursor:default;">
+                    <h3 style="margin-bottom:16px;">💰 Financial Overview</h3>
+                    <div style="display:grid;gap:12px;">
+                        <div style="display:flex;justify-content:space-between;padding:12px;background:#f9fafb;border-radius:8px;">
+                            <span style="color:#6b7280;">Revenue</span>
+                            <strong style="color:#16a34a;" id="statRevenue">₹0</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:12px;background:#f9fafb;border-radius:8px;">
+                            <span style="color:#6b7280;">Expenses</span>
+                            <strong style="color:#dc2626;" id="statExpenses">₹0</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:12px;background:#f9fafb;border-radius:8px;">
+                            <span style="color:#6b7280;">Profit</span>
+                            <strong id="statProfit">₹0</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="cursor:default;" id="recentTrips">
+                    <h3>📍 Recent Trips</h3>
+                    <p style="text-align:center;color:#6b7280;padding:20px;">No trips yet</p>
+                </div>
+            </div>
+
+            <div id="page2" class="page">
+                <h2 style="margin-bottom:20px;">🚛 Vehicles</h2>
+                <button class="btn" onclick="showModal('vm')" style="cursor:pointer;">➕ Add Vehicle</button>
+                <div id="vlist"></div>
+            </div>
+
+            <div id="page3" class="page">
+                <h2 style="margin-bottom:20px;">🗺️ Trips</h2>
+                <button class="btn" onclick="showModal('tm')" style="cursor:pointer;">➕ Add Trip</button>
+                <div id="tlist"></div>
+            </div>
+
+            <div id="page4" class="page">
+                <h2 style="margin-bottom:20px;">💳 Expenses</h2>
+                <button class="btn" onclick="showModal('em')" style="cursor:pointer;">➕ Add Expense</button>
+                <div id="elist"></div>
+            </div>
+
+            <div id="page5" class="page">
+                <h2 style="margin-bottom:20px;">⚙️ More</h2>
+                <div class="card" style="cursor:default;">
+                    <h3>📤 Data</h3>
+                    <button class="btn" onclick="exportData()" style="margin-top:16px;cursor:pointer;">Export CSV</button>
+                    <button class="btn btn-danger" onclick="clearAllData()" style="cursor:pointer;">Clear Data</button>
+                </div>
+                <div class="card" style="cursor:default;">
+                    <h3>📘 Instructions</h3>
+                    <div class="instruction-section">
+                        <h3>🚛 Vehicles</h3>
+                        <ul>
+                            <li>Add vehicles with number, type, and driver</li>
+                            <li>Click vehicle card for summary and expenses</li>
+                            <li>Track per-vehicle profitability</li>
+                        </ul>
+                    </div>
+                    <div class="instruction-section">
+                        <h3>🗺️ Trips</h3>
+                        <ul>
+                            <li>Record trips with from/to/amount</li>
+                            <li>Choose One Way or Round Trip</li>
+                        </ul>
+                    </div>
+                    <div class="instruction-section">
+                        <h3>💳 Expenses</h3>
+                        <ul>
+                            <li>Categories: Fuel, Toll, Wages, Maintenance, EMI, Rent</li>
+                            <li>Assign to specific vehicle or general</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card" style="cursor:default;">
+                    <h3>📞 Support</h3>
+                    <p style="margin-top:12px;">WhatsApp: <a href="https://wa.me/917768852119" style="color:#2563eb;">+91 7768852119</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav">
+            <button class="nav-btn active" onclick="goPage(1,this)"><div style="font-size:20px;">📊</div><div>Dashboard</div></button>
+            <button class="nav-btn" onclick="goPage(2,this)"><div style="font-size:20px;">🚛</div><div>Vehicles</div></button>
+            <button class="nav-btn" onclick="goPage(3,this)"><div style="font-size:20px;">🗺️</div><div>Trips</div></button>
+            <button class="nav-btn" onclick="goPage(4,this)"><div style="font-size:20px;">💳</div><div>Expenses</div></button>
+            <button class="nav-btn" onclick="goPage(5,this)"><div style="font-size:20px;">⚙️</div><div>More</div></button>
+        </div>
+    </div>
+
+    <div id="vm" class="modal">
+        <div class="modal-box">
+            <h2>Add Vehicle</h2>
+            <input type="text" id="vn" placeholder="Vehicle Number" style="padding-left:16px;">
+            <select id="vt">
+                <option value="">Select Type</option>
+                <optgroup label="Small Trucks">
+                    <option>Tata Ace</option>
+                    <option>Bolero Pickup</option>
+                    <option>Chhota Hathi</option>
+                    <option>Taurus</option>
+                </optgroup>
+                <optgroup label="Medium Trucks">
+                    <option>407</option>
+                    <option>Eicher 14ft</option>
+                    <option>Eicher 17ft</option>
+                    <option>Eicher 19ft</option>
+                </optgroup>
+                <optgroup label="Large Trucks">
+                    <option>Tata 22ft</option>
+                    <option>Tata LPT 2518</option>
+                    <option>Ashok Leyland</option>
+                    <option>Eicher Pro 3015</option>
+                </optgroup>
+                <optgroup label="Trailers">
+                    <option>32ft MXL Trailer</option>
+                    <option>32ft SXL Trailer</option>
+                    <option>40ft Container</option>
+                    <option>20ft Container</option>
+                </optgroup>
+                <optgroup label="Others">
+                    <option>Tempo</option>
+                    <option>Van</option>
+                    <option>Pickup</option>
+                    <option>Mini Truck</option>
+                </optgroup>
+            </select>
+            <input type="text" id="vd" placeholder="Driver Name" style="padding-left:16px;">
+            <div style="display:flex;gap:12px;">
+                <button class="btn" onclick="addVehicle()">Add</button>
+                <button class="btn" onclick="hideModal('vm')" style="background:#6b7280;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tm" class="modal">
+        <div class="modal-box">
+            <h2>Add Trip</h2>
+            <select id="tv"></select>
+            <input type="text" id="tf" placeholder="From" style="padding-left:16px;">
+            <input type="text" id="tt" placeholder="To" style="padding-left:16px;">
+            <select id="tripType">
+                <option value="oneway">One Way</option>
+                <option value="twoway">Round Trip</option>
+            </select>
+            <input type="date" id="ts" style="padding-left:16px;">
+            <input type="number" id="ta" placeholder="Amount (₹)" style="padding-left:16px;">
+            <div style="display:flex;gap:12px;">
+                <button class="btn" onclick="addTrip()">Add</button>
+                <button class="btn" onclick="hideModal('tm')" style="background:#6b7280;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="em" class="modal">
+        <div class="modal-box">
+            <h2>Add Expense</h2>
+            <select id="ev"><option value="">General</option></select>
+            <select id="ec">
+                <option value="">Category</option>
+                <option value="Fuel">⛽ Fuel</option>
+                <option value="Toll">🛣️ Toll</option>
+                <option value="Wages">👨‍💼 Wages</option>
+                <option value="Maintenance">🔧 Maintenance</option>
+                <option value="EMI">💰 EMI</option>
+                <option value="Rent">🏢 Rent</option>
+                <option value="Misc">📦 Misc</option>
+            </select>
+            <input type="number" id="ea" placeholder="Amount" style="padding-left:16px;">
+            <input type="date" id="ed" style="padding-left:16px;">
+            <textarea id="en" placeholder="Notes" rows="3"></textarea>
+            <div style="display:flex;gap:12px;">
+                <button class="btn" onclick="addExpense()">Add</button>
+                <button class="btn" onclick="hideModal('em')" style="background:#6b7280;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="vsm" class="modal">
+        <div class="modal-box">
+            <h2 id="vsmTitle">Vehicle Summary</h2>
+            <div id="vsmContent"></div>
+            <div class="action-buttons">
+                <button class="btn btn-success btn-small" onclick="addTripFromVehicle()">➕ Trip</button>
+                <button class="btn btn-warning btn-small" onclick="addExpenseFromVehicle()">💳 Expense</button>
+            </div>
+            <button class="btn" onclick="hideModal('vsm')" style="background:#6b7280;margin-top:12px;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        var users = JSON.parse(localStorage.getItem('fm_users') || '[]');
+        var user = null;
+        var data = {vehicles:[],trips:[],expenses:[]};
+        var currentVehicleIndex = null;
+
+        if (users.length === 0) {
+            users = [{n:'Demo',e:'demo@fleet.com',p:'demo123',d:{vehicles:[],trips:[],expenses:[]}}];
+            localStorage.setItem('fm_users', JSON.stringify(users));
+        }
+
+        function init() {
+            document.getElementById('ed').value = new Date().toISOString().split('T')[0];
+        }
+
+        function showLogin() {
+            document.getElementById('loginDiv').style.display = 'block';
+            document.getElementById('signupDiv').style.display = 'none';
+            document.getElementById('forgotDiv').style.display = 'none';
+        }
+
+        function showSignup() {
+            document.getElementById('loginDiv').style.display = 'none';
+            document.getElementById('signupDiv').style.display = 'block';
+            document.getElementById('forgotDiv').style.display = 'none';
+        }
+
+        function showForgotPassword() {
+            document.getElementById('loginDiv').style.display = 'none';
+            document.getElementById('signupDiv').style.display = 'none';
+            document.getElementById('forgotDiv').style.display = 'block';
+        }
+
+        function recoverPassword() {
+            var email = document.getElementById('femail').value.trim();
+            if (!email) return alert('Enter email');
+            for (var i=0; i<users.length; i++) {
+                if (users[i].e === email) {
+                    alert('✅ Your password: ' + users[i].p);
+                    showLogin();
+                    return;
+                }
+            }
+            alert('❌ Email not found');
+        }
+
+        function doSignup() {
+            var n = document.getElementById('sname').value.trim();
+            var e = document.getElementById('semail').value.trim();
+            var p = document.getElementById('spass').value;
+            if (!n||!e||!p) return alert('Fill all fields');
+            if (p.length<6) return alert('Password min 6 chars');
+            users.push({n:n,e:e,p:p,d:{vehicles:[],trips:[],expenses:[]}});
+            localStorage.setItem('fm_users',JSON.stringify(users));
+            alert('✅ Account created!');
+            showLogin();
+        }
+
+        function doLogin() {
+            var e = document.getElementById('lemail').value.trim();
+            var p = document.getElementById('lpass').value;
+            if (!e||!p) return alert('Enter credentials');
+            
+            for (var i=0; i<users.length; i++) {
+                if (users[i].e===e && users[i].p===p) {
+                    user = users[i];
+                    data = user.d || {vehicles:[],trips:[],expenses:[]};
+                    
+                    document.getElementById('login').classList.remove('active');
+                    document.getElementById('app').classList.add('active');
+                    window.scrollTo(0, 0);
+                    
+                    document.getElementById('userName').textContent = user.n;
+                    document.getElementById('welcomeTitle').textContent = 'Welcome Back, ' + user.n + '! 👋';
+                    document.getElementById('welcomeMessage').textContent = 'Successfully logged in. Ready to manage your fleet!';
+                    
+                    document.getElementById('popupOverlay').classList.add('show');
+                    document.getElementById('welcomePopup').classList.add('show');
+                    
+                    refreshDashboard();
+                    return;
+                }
+            }
+            alert('Invalid credentials');
+        }
+
+        function closeWelcomePopup() {
+            document.getElementById('popupOverlay').classList.remove('show');
+            document.getElementById('welcomePopup').classList.remove('show');
+        }
+
+        function doLogout() {
+            if (confirm('Logout?')) {
+                saveData();
+                document.getElementById('app').classList.remove('active');
+                document.getElementById('login').classList.add('active');
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function saveData() {
+            if (!user) return;
+            user.d = data;
+            for (var i=0; i<users.length; i++) {
+                if (users[i].e === user.e) {
+                    users[i] = user;
+                    break;
+                }
+            }
+            localStorage.setItem('fm_users',JSON.stringify(users));
+        }
+
+        function showModal(id) {
+            if (id==='tm' && data.vehicles.length===0) return alert('Add vehicles first');
+            if (id==='tm') {
+                var sel = document.getElementById('tv');
+                sel.innerHTML = '';
+                for (var i=0; i<data.vehicles.length; i++) {
+                    var opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = data.vehicles[i].number + ' - ' + data.vehicles[i].type;
+                    sel.appendChild(opt);
+                }
+                if (currentVehicleIndex !== null) sel.value = currentVehicleIndex;
+                document.getElementById('ts').value = new Date().toISOString().split('T')[0];
+            }
+            if (id==='em') {
+                var sel = document.getElementById('ev');
+                sel.innerHTML = '<option value="">General</option>';
+                for (var i=0; i<data.vehicles.length; i++) {
+                    var opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = data.vehicles[i].number;
+                    sel.appendChild(opt);
+                }
+                if (currentVehicleIndex !== null) sel.value = currentVehicleIndex;
+            }
+            document.getElementById(id).classList.add('active');
+        }
+
+        function hideModal(id) {
+            document.getElementById(id).classList.remove('active');
+            if (id === 'tm' || id === 'em') currentVehicleIndex = null;
+        }
+
+        function addVehicle() {
+            var n = document.getElementById('vn').value.trim();
+            var t = document.getElementById('vt').value;
+            var d = document.getElementById('vd').value.trim();
+            if (!n||!t||!d) return alert('Fill all fields');
+            data.vehicles.push({number:n.toUpperCase(),type:t,driver:d});
+            saveData();
+            hideModal('vm');
+            renderVehicles();
+            refreshDashboard();
+            alert('✅ Vehicle added!');
+            document.getElementById('vn').value = '';
+            document.getElementById('vt').value = '';
+            document.getElementById('vd').value = '';
+        }
+
+        function addTrip() {
+            var vIdx = parseInt(document.getElementById('tv').value);
+            var f = document.getElementById('tf').value.trim();
+            var t = document.getElementById('tt').value.trim();
+            var d = document.getElementById('ts').value;
+            var a = document.getElementById('ta').value;
+            var tripType = document.getElementById('tripType').value;
+            
+            if (!f||!t||!d||!a) return alert('Fill all fields');
+            
+            var vehicle = data.vehicles[vIdx];
+            data.trips.push({
+                vehicle: vehicle.number,
+                vehicleType: vehicle.type,
+                from: f,
+                to: t,
+                date: d,
+                amount: parseFloat(a),
+                type: tripType
+            });
+            
+            saveData();
+            hideModal('tm');
+            renderTrips();
+            refreshDashboard();
+            alert('✅ Trip added!');
+            
+            document.getElementById('tf').value = '';
+            document.getElementById('tt').value = '';
+            document.getElementById('ta').value = '';
+        }
+
+        function addExpense() {
+            var vIdx = document.getElementById('ev').value;
+            var category = document.getElementById('ec').value;
+            var amount = document.getElementById('ea').value;
+            var date = document.getElementById('ed').value;
+            var notes = document.getElementById('en').value.trim();
+            
+            if (!amount || !date || !category) return alert('Fill required fields');
+            
+            var vehicleNum = vIdx ? data.vehicles[parseInt(vIdx)].number : 'General';
+            
+            data.expenses.push({
+                vehicle: vehicleNum,
+                category: category,
+                amount: parseFloat(amount),
+                date: date,
+                notes: notes
+            });
+            
+            saveData();
+            hideModal('em');
+            refreshDashboard();
+            renderExpenses();
+            alert('✅ Expense added!');
+            
+            document.getElementById('ea').value = '';
+            document.getElementById('en').value = '';
+        }
+
+        function showVehicleSummary(index) {
+            var vehicle = data.vehicles[index];
+            var vTrips = 0;
+            var vIncome = 0;
+            var vExpense = 0;
+            
+            for (var i = 0; i < data.trips.length; i++) {
+                if (data.trips[i].vehicle === vehicle.number) {
+                    vTrips++;
+                    vIncome += parseFloat(data.trips[i].amount) || 0;
+                }
+            }
+            
+            for (var j = 0; j < data.expenses.length; j++) {
+                if (data.expenses[j].vehicle === vehicle.number) {
+                    vExpense += parseFloat(data.expenses[j].amount) || 0;
+                }
+            }
+            
+            var profit = vIncome - vExpense;
+            var profitColor = profit >= 0 ? '#16a34a' : '#dc2626';
+            
+            document.getElementById('vsmTitle').textContent = vehicle.number + ' Summary';
+            
+            var html = '<div style="margin-bottom:20px;">';
+            html += '<p><strong>Type:</strong> ' + vehicle.type + '</p>';
+            html += '<p><strong>Driver:</strong> ' + vehicle.driver + '</p>';
+            html += '</div>';
+            
+            html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">';
+            html += '<div class="stat-box"><div class="stat-value">' + vTrips + '</div><div class="stat-label">Trips</div></div>';
+            html += '<div class="stat-box"><div class="stat-value" style="color:#16a34a;">₹' + vIncome.toLocaleString('en-IN') + '</div><div class="stat-label">Income</div></div>';
+            html += '<div class="stat-box"><div class="stat-value" style="color:#dc2626;">₹' + vExpense.toLocaleString('en-IN') + '</div><div class="stat-label">Expenses</div></div>';
+            html += '<div class="stat-box"><div class="stat-value" style="color:' + profitColor + ';">₹' + Math.abs(profit).toLocaleString('en-IN') + '</div><div class="stat-label">Profit</div></div>';
+            html += '</div>';
+            
+            document.getElementById('vsmContent').innerHTML = html;
+            currentVehicleIndex = index;
+            document.getElementById('vsm').classList.add('active');
+        }
+
+        function addTripFromVehicle() {
+            hideModal('vsm');
+            showModal('tm');
+        }
+
+        function addExpenseFromVehicle() {
+            hideModal('vsm');
+            showModal('em');
+        }
+
+        function refreshDashboard() {
+            document.getElementById('statVehicles').textContent = data.vehicles.length;
+            document.getElementById('statTrips').textContent = data.trips.length;
+            
+            var revenue = 0;
+            for (var i = 0; i < data.trips.length; i++) {
+                revenue += parseFloat(data.trips[i].amount) || 0;
+            }
+            
+            var expenses = 0;
+            for (var j = 0; j < data.expenses.length; j++) {
+                expenses += parseFloat(data.expenses[j].amount) || 0;
+            }
+            
+            var profit = revenue - expenses;
+            
+            document.getElementById('statRevenue').textContent = '₹' + revenue.toLocaleString('en-IN');
+            document.getElementById('statExpenses').textContent = '₹' + expenses.toLocaleString('en-IN');
+            document.getElementById('statProfit').textContent = '₹' + Math.abs(profit).toLocaleString('en-IN');
+            document.getElementById('statProfit').style.color = profit >= 0 ? '#16a34a' : '#dc2626';
+            
+            var recentDiv = document.getElementById('recentTrips');
+            if (!data.trips || data.trips.length === 0) {
+                recentDiv.innerHTML = '<h3>📍 Recent Trips</h3><p style="text-align:center;color:#6b7280;padding:20px;">No trips yet</p>';
+            } else {
+                var html = '<h3>📍 Recent Trips</h3>';
+                var recent = data.trips.slice(-5).reverse();
+                for (var k = 0; k < recent.length; k++) {
+                    var trip = recent[k];
+                    var icon = trip.type === 'twoway' ? '🔄' : '➡️';
+                    html += '<div style="border-top:1px solid #e5e7eb;padding:12px 0;display:flex;justify-content:space-between;">';
+                    html += '<div><strong>' + trip.vehicle + '</strong><div style="font-size:13px;color:#6b7280;">' + icon + ' ' + trip.from + ' → ' + trip.to + '</div></div>';
+                    html += '<div style="text-align:right;"><strong style="color:#16a34a;">₹' + trip.amount.toLocaleString('en-IN') + '</strong></div>';
+                    html += '</div>';
+                }
+                recentDiv.innerHTML = html;
+            }
+        }
+
+        function renderVehicles() {
+            var list = document.getElementById('vlist');
+            if (data.vehicles.length===0) { 
+                list.innerHTML='<div class="card" style="cursor:default;">No vehicles yet</div>'; 
+                return; 
+            }
+            list.innerHTML = '';
+            for (var i=0; i<data.vehicles.length; i++) {
+                var v = data.vehicles[i];
+                var vTrips = 0;
+                var vIncome = 0;
+                for (var j = 0; j < data.trips.length; j++) {
+                    if (data.trips[j].vehicle === v.number) {
+                        vTrips++;
+                        vIncome += parseFloat(data.trips[j].amount) || 0;
+                    }
+                }
+                
+                var c = document.createElement('div');
+                c.className = 'card';
+                c.onclick = (function(index) {
+                    return function() { showVehicleSummary(index); };
+                })(i);
+                
+                c.innerHTML = '<h3>'+v.number+'</h3><p><strong>'+v.type+'</strong> | '+v.driver+'</p><div style="margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb;"><span style="color:#2563eb;font-weight:600;">'+vTrips+' trips</span> | <span style="color:#16a34a;font-weight:600;">₹'+vIncome.toLocaleString('en-IN')+'</span></div><p style="font-size:12px;color:#6b7280;margin-top:8px;">👆 Click for details</p>';
+                list.appendChild(c);
+            }
+        }
+
+        function renderTrips() {
+            var list = document.getElementById('tlist');
+            if (data.trips.length===0) { 
+                list.innerHTML='<div class="card" style="cursor:default;">No trips yet</div>'; 
+                return; 
+            }
+            list.innerHTML = '';
+            for (var i=data.trips.length-1; i>=0; i--) {
+                var trip = data.trips[i];
+                var c = document.createElement('div');
+                c.className = 'card';
+                c.style.cursor = 'default';
+                var icon = trip.type === 'twoway' ? '🔄' : '➡️';
+                c.innerHTML = '<h3>'+trip.vehicle+'</h3><p>'+icon+' '+trip.from+' → '+trip.to+'</p><p style="color:#6b7280;font-size:13px;">'+trip.date+'</p><p style="color:#16a34a;font-weight:bold;font-size:18px;margin-top:8px;">₹'+trip.amount.toLocaleString('en-IN')+'</p>';
+                list.appendChild(c);
+            }
+        }
+
+        function renderExpenses() {
+            var list = document.getElementById('elist');
+            if (!data.expenses || data.expenses.length===0) { 
+                list.innerHTML='<div class="card" style="cursor:default;">No expenses yet</div>'; 
+                return; 
+            }
+            list.innerHTML = '';
+            for (var i=data.expenses.length-1; i>=0; i--) {
+                var exp = data.expenses[i];
+                var c = document.createElement('div');
+                c.className = 'card';
+                c.style.cursor = 'default';
+                c.innerHTML = '<h3>'+exp.category+'</h3><p>'+exp.vehicle+' | '+exp.date+'</p>'+(exp.notes?'<p style="font-size:13px;color:#6b7280;">'+exp.notes+'</p>':'')+'<p style="color:#dc2626;font-weight:bold;font-size:18px;margin-top:8px;">₹'+exp.amount.toLocaleString('en-IN')+'</p>';
+                list.appendChild(c);
+            }
+        }
+
+        function goPage(n,btn) {
+            var ps = document.querySelectorAll('.page');
+            for (var i=0; i<ps.length; i++) ps[i].classList.remove('active');
+            document.getElementById('page'+n).classList.add('active');
+            var bs = document.querySelectorAll('.nav-btn');
+            for (var j=0; j<bs.length; j++) bs[j].classList.remove('active');
+            btn.classList.add('active');
+            if (n===2) renderVehicles();
+            if (n===3) renderTrips();
+            if (n===4) renderExpenses();
+        }
+
+        function exportData() {
+            var csv = 'FLEET MANAGER EXPORT\n\nTRIPS\nDate,Vehicle,From,To,Amount\n';
+            for (var i = 0; i < data.trips.length; i++) {
+                var t = data.trips[i];
+                csv += t.date + ',' + t.vehicle + ',' + t.from + ',' + t.to + ',' + t.amount + '\n';
+            }
+            csv += '\nEXPENSES\nDate,Vehicle,Category,Amount,Notes\n';
+            for (var j = 0; j < data.expenses.length; j++) {
+                var e = data.expenses[j];
+                csv += e.date + ',' + e.vehicle + ',' + e.category + ',' + e.amount + ',"' + (e.notes||'') + '"\n';
+            }
+            var blob = new Blob([csv], {type: 'text/csv'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'fleet-export.csv';
+            a.click();
+            alert('✅ Exported!');
+        }
+
+        function clearAllData() {
+            if (confirm('Delete all data? Cannot undo!')) {
+                data = { vehicles: [], trips: [], expenses: [] };
+                saveData();
+                refreshDashboard();
+                renderVehicles();
+                renderTrips();
+                renderExpenses();
+                alert('✅ Cleared!');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
